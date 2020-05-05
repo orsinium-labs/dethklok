@@ -1,18 +1,30 @@
 import ast
 from argparse import ArgumentParser
 from pathlib import Path
+from io import StringIO
 from typing import Sequence
 
-from astunparse import Unparser
+import astunparse
+import autopep8
 
 
-def make_metal(path: Path) -> None:
+ENCODING = 'utf8'
+
+
+def make_metal(*, path: Path, content: str = None) -> str:
     """Autoformat the given file in place.
     """
-    content = path.read_text(encoding='utf8')
+    if content is None:
+        content = path.read_text(encoding=ENCODING)
     tree = compile(content, str(path), 'exec', ast.PyCF_ONLY_AST)
-    with path.open(mode='w', encoding='utf8') as stream:
-        Unparser(tree=tree, file=stream)
+
+    with StringIO() as buffer:
+        astunparse.Unparser(tree=tree, file=buffer)
+        buffer.seek(0)
+        content = buffer.read()
+
+    content = autopep8.fix_code(source=content)
+    return content
 
 
 def sound_check(path: Path) -> bool:
@@ -20,11 +32,10 @@ def sound_check(path: Path) -> bool:
 
     Returns True if second time formatting of file doesn't change anything.
     """
-    make_metal(path=path)
-    old_content = path.read_text(encoding='utf8')
-    make_metal(path=path)
-    new_content = path.read_text(encoding='utf8')
-    return old_content == new_content
+    content1 = path.read_text(encoding=ENCODING)
+    content2 = make_metal(path=path, content=content1)
+    content3 = make_metal(path=path, content=content2)
+    return content2 == content3
 
 
 def main(argv: Sequence[str]) -> int:
@@ -35,7 +46,9 @@ def main(argv: Sequence[str]) -> int:
 
     if args.command == 'format':
         for path in args.paths:
-            make_metal(path=Path(path))
+            path = Path(path)
+            content = make_metal(path=path)
+            path.write_text(content, encoding=ENCODING)
         return 0
 
     if args.command == 'test':
