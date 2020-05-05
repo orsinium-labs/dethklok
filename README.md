@@ -3,7 +3,7 @@
 > We are here to make coffee metal. We will make everything metal. Blacker than the blackest black times infinity.
 > - Nathan Explosion, Dethklok
 
-Most uncomporomissing Python code formatter ever!
+The most uncompromising Python code formatter ever!
 
 Dethklok uses a few code formatters under the hood:
 
