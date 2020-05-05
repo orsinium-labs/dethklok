@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Sequence
 
-from ._unparse import Unparser
+from astunparse import Unparser
 
 
 def make_metal(path: Path) -> None:
